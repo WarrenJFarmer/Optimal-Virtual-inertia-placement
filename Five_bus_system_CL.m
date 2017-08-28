@@ -126,18 +126,28 @@ B_og = [-1*(B21+B31+B41+B51)   B21                    B31                   B41 
 % Inertia (SyncM)
 %m0 = [7,8];
 
+%Converts the powerfactory parameter H to M for calculation
 H1 = 4;
-H2 =
-H3
-H4
-H5
+S1rated = 800e6; %[VA]
+m1 = (2*H1*S1rated)/314.159;                % Bus1 (primary bus)
+
+H2 = 1e-9;
+S2rated = 800e6; %[VA]                      % Bus2
+m2 = (2*H2*S2rated)/314.159;
+
+H3 = 4;
+S3rated = 800e6; %[VA]
+m3 = (2*H3*S3rated)/314.159;                % Bus3 (second generator)
+
+H4 = 1e-9;
+S4rated = 800e6; %[VA]                      % Bus4
+m4 = (2*H4*S4rated)/314.159;
+
+H5 = 1e-9;
+S5rated = 800e6; %[VA]                      % Bus5
+m5 = (2*H5*S5rated)/314.159;
 
 
-m1 = 4; %7.2;                 % Bus1 (primary bus) 
-m2 = 0.01;                 % Bus2
-m3 = 4; %7.8;                 % Bus3 (second generator)
-m4 = 0.01;                 % Bus4
-m5 = 0.01;                 % Bus5
 
 % optimal inertia for two identical rated sync gens (m1 = 7.2, m3 = 7.8)
 
@@ -356,7 +366,7 @@ G =[B_delta*II;
 
 
 % Feedback gain matrix
-
+% (from H to M)
 
 d1 = vd1; 
 d2 = vd2;
@@ -368,6 +378,12 @@ m2 = vm2;            % [10 0.0001]
 m3 = vm3;            % [0.001 0.0001]  //on generator
 m4 = vm4;            % [0.0001]
 m5 = vm5;            % [0.01 0.0001]  // 0.01 gee H2 = 17.2823
+
+%m1 = (2*vm1*S1rated)/314.159;            % [10 0.0001]      //on generator
+%m2 = (2*vm2*S2rated)/314.159;            % [10 0.0001]
+%m3 = (2*vm3*S3rated)/314.159;            % [0.001 0.0001]  //on generator
+%m4 = (2*vm4*S4rated)/314.159;            % [0.0001]
+%m5 = (2*vm5*S5rated)/314.159;            % [0.01 0.0001]  // 0.01 gee H2 = 17.2823
 
 C_tilde = [d1   0   0   0   0   0   0   0   0   0;
             0   m1  0   0   0   0   0   0   0   0;
