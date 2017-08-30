@@ -3,8 +3,24 @@ clear all;
 
 %subMatrix = [2 3 4 5]; % vector discribes the sub-matrix row and colomn selection
 
+% Describe Power System
+% ----------------------
+%SratedTOT = 800e6 + 800e6;
+%H_ub = 15;
+%H_tot = 7;
+%H_B1_init = 15;
+%H_B3_init = 15;
 
+%w0 = 2*pi*50;
 
+%M_ub = (2*H_ub*SratedTOT)/w0;
+M_ub = 15;
+%M_tot = (2*H_tot*SratedTOT)/w0;
+M_tot = 0.1e6;
+%M_B1_init = (2*H_B1_init*SratedTOT)/w0;
+M_B1_init = 10;
+%M_B3_init = (2*H_B3_init*SratedTOT)/w0;
+M_B3_init = 50;
 
 % calculate H2 norm
 %H2 = trace(B_delta'*Pk*B_delta)
@@ -15,25 +31,35 @@ clear all;
 fun =@(mg) find_Pm(mg(1),mg(2),mg(3),mg(4),mg(5),mg(6),mg(7),mg(8),mg(9),mg(10));
 
 % bounds
-lb = [zeros(1,5), 0.0001, 0.0001, 0.0001, 0.0001, 0.0001];
-ub = [ones(1,5), 15*ones(1,5)];
+lb = [zeros(1,5), 0.0, 0.0, 0.0, 0.0, 0.0];
+ub = [10e6,0,10e6,0,100e6, 1e6,0.1,1e6,0.1,100e6];
+%ub = [ones(1,5), M_ub*ones(1,5)];
 %ub = [ones(1,5), 15, 0.0001, 15, 0.0001, 0.0001];
 
 % linear inequality
-A = [];
-b = [];
+A = [zeros(1,5), ones(1,5); ones(1,5), zeros(1,5)];
+b = [M_tot;250];
 
 % linear equality
-Aeq = [zeros(1,5), ones(1,5)]; %[1,1]
-beq = 7;
+%Aeq = [zeros(1,5), ones(1,5)]; %[1,1]
+%beq = M_tot; %7
+Aeq = []; %[1,1]
+beq = []; %7
 
 % initial value
-m0 = [0.1*ones(1,5), 3,0,4,0,0]; %[11,4]
+m0 = [0.1*ones(1,5), M_B1_init,0,M_B3_init,0,0]; %[11,4]
 
 % optimization
+%options = optimoptions(@fmincon,'ConstraintTolerance', 1.0000e-09);
 [v, fval] = fmincon(fun,m0,A,b,Aeq,beq,lb,ub);
 
-S = "VD1 = " + num2str(v(1)) +  "   VM1 = " + num2str(v(1 + 5)) + newline + "VD2 = " + num2str(v(2)) + "   VM2 = " + num2str(v(2 + 5)) + newline + "VD3 = " + num2str(v(3)) + "   VM3 = " + num2str(v(3 + 5)) + newline + "VD4 = " + num2str(v(4)) + "   VM4 = " + num2str(v(4 + 5)) + newline + "VD5 = " + num2str(v(5)) + "   VM5 = " + num2str(v(5 + 5)) + newline;
+
+
+
+scale = 1e0;
+unitsM = " Ws^2";
+% Display output
+S = "VD1 = " + num2str(v(1)) + " W s" +  "   VM1 = " + num2str(round(v(1 + 5)/(scale),3)) + unitsM + newline + "VD2 = " + num2str(v(2))+ " W s" + "   VM2 = " + num2str(round(v(2 + 5)/(scale),3)) + unitsM + newline + "VD3 = " + num2str(v(3)) + " W s"  + "   VM3 = " + num2str(round(v(3 + 5)/(scale),3)) + unitsM + newline + "VD4 = " + num2str(v(4)) + " W s"  + "   VM4 = " + num2str(round(v(4 + 5)/(scale),3))+ unitsM + newline + "VD5 = " + num2str(v(5)) + " W s"  + "   VM5 = " + num2str(round(v(5 + 5)/(scale),3)) + unitsM + newline;
 
 disp(S + newline + "Hardy2 = " + num2str(fval));
  
@@ -127,26 +153,30 @@ B_og = [-1*(B21+B31+B41+B51)   B21                    B31                   B41 
 %m0 = [7,8];
 
 %Converts the powerfactory parameter H to M for calculation
-H1 = 4;
-S1rated = 800e6; %[VA]
-m1 = (2*H1*S1rated)/314.159;                % Bus1 (primary bus)
+%H1 = 4;
+%S1rated = 800e6; %[VA]
+%m1 = (2*H1*S1rated)/314.159;                % Bus1 (primary bus)
+m1 = 20.3718e6;
 
-H2 = 1e-9;
-S2rated = 800e6; %[VA]                      % Bus2
-m2 = (2*H2*S2rated)/314.159;
+%H2 = 1e-0;
+%S2rated = 800e6; %[VA]                      % Bus2
+%m2 = (2*H2*S2rated)/314.159;
+m2 = 0.1;
 
-H3 = 4;
-S3rated = 800e6; %[VA]
-m3 = (2*H3*S3rated)/314.159;                % Bus3 (second generator)
+%H3 = 4;
+%S3rated = 800e6; %[VA]
+%m3 = (2*H3*S3rated)/314.159;                % Bus3 (second generator)
+m3 = 25.4648e6;
 
-H4 = 1e-9;
-S4rated = 800e6; %[VA]                      % Bus4
-m4 = (2*H4*S4rated)/314.159;
+%H4 = 1e-0;
+%S4rated = 800e6; %[VA]                      % Bus4
+%m4 = (2*H4*S4rated)/314.159;
+m4 = 0.1;
 
-H5 = 1e-9;
-S5rated = 800e6; %[VA]                      % Bus5
-m5 = (2*H5*S5rated)/314.159;
-
+%H5 = 1e-0;
+%S5rated = 800e6; %[VA]                      % Bus5
+%m5 = (2*H5*S5rated)/314.159;
+m5 = 0.1;
 
 
 % optimal inertia for two identical rated sync gens (m1 = 7.2, m3 = 7.8)
@@ -163,11 +193,11 @@ M_sub = M(subMatrix, subMatrix);
 
 % [should be in p.u. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!]
 % Damping (SyncM)
-d1 = 0.01;              % Bus 1 (primary bus)
-d2 = 0.01;               % Bus 2
-d3 = 0.01;              % Bus 3
-d4 = 0.01;               % Bus 4
-d5 = 0.01;               % Bus 5
+d1 = 10e6;              % Bus 1 (primary bus)
+d2 = 1e0;               % Bus 2
+d3 = 10e6;              % Bus 3
+d4 = 1e0;               % Bus 4
+d5 = 1e0;               % Bus 5
 
 D = [d1  0  0  0  0;
       0  d2 0  0  0;
@@ -298,8 +328,9 @@ T1 = 0.01;  % PD-control causality time constant
 T2 = 0.05;   % Time constant to model the PLL
 
 % Virtual inertia per bus i
-A_tilde_i = [0                  1;
-            -1/(T1*T2)  (T1+T2)/(-1*T1*T2)];
+%A_tilde_i = [0                  1;
+%            -1/(T1*T2)  (T1+T2)/(-1*T1*T2)];
+A_tilde_i = [(T1+T2)/(-1*T1*T2), -1/(T1*T2);1,0];
      
 B_tilde_i = [1/(T1*T2);
                 0];
@@ -385,16 +416,16 @@ m5 = vm5;            % [0.01 0.0001]  // 0.01 gee H2 = 17.2823
 %m4 = (2*vm4*S4rated)/314.159;            % [0.0001]
 %m5 = (2*vm5*S5rated)/314.159;            % [0.01 0.0001]  // 0.01 gee H2 = 17.2823
 
-C_tilde = [d1   0   0   0   0   0   0   0   0   0;
-            0   m1  0   0   0   0   0   0   0   0;
-            0   0   d2  0   0   0   0   0   0   0;
-            0   0   0   m2  0   0   0   0   0   0;
-            0   0   0   0   d3  0   0   0   0   0;
-            0   0   0   0   0   m3  0   0   0   0;
-            0   0   0   0   0   0   d4  0   0   0;
-            0   0   0   0   0   0   0   m4  0   0;
-            0   0   0   0   0   0   0   0   d5  0;
-            0   0   0   0   0   0   0   0   0   m5;];
+C_tilde = [m1   0   0   0   0   0   0   0   0   0;
+            0   d1  0   0   0   0   0   0   0   0;
+            0   0   m2  0   0   0   0   0   0   0;
+            0   0   0   d2  0   0   0   0   0   0;
+            0   0   0   0   m3  0   0   0   0   0;
+            0   0   0   0   0   d3  0   0   0   0;
+            0   0   0   0   0   0   m4  0   0   0;
+            0   0   0   0   0   0   0   d4  0   0;
+            0   0   0   0   0   0   0   0   m5  0;
+            0   0   0   0   0   0   0   0   0   d5;];
         
 %K_tilde_proef = [zeros(3*size(M_sub,1))                       zeros(3*size(M_sub,1), 2*size(M_sub,1));
 %                 zeros(2*size(M_sub,1), 3*size(M_sub,1))      C_tilde];
@@ -423,8 +454,8 @@ C = [Q*C_delta                              zeros(size(Q*C_delta,1),size(M,1))  
 
 %-------------------------------------------------
 % Tune parameters to penalizes the control effort
-rm = 0.001;  %0.0083;
-rd = 0.01;    %0.08;
+rm = 0.008;  %0.0083;
+rd = 0.08;    %0.08;
 %--------------------------------------------------
 
 R = kron(eye(size(M,1)),[rd 0; 0 rm]);
@@ -441,14 +472,17 @@ QVM = C'*C + K_tilde'*F'*F*K_tilde;
  %CC = C_delta'*C_delta;
 
 % solving lyapunov ( Pk = lyap(Acl', QVM) )
-n = size(QVM,1);
-A1 = kron(Acl',eye(n)) + kron(eye(n),Acl');
-qvm = QVM(:);
-x0 = -A1\qvm;
-Pk = reshape(x0,n,n);
+Pk = lyap(Acl', QVM);
+%n = size(QVM,1);
+%A1 = kron(Acl',eye(n)) + kron(eye(n),Acl');
+%qvm = QVM(:);
+%x0 = -A1\qvm;
+%Pk = reshape(x0,n,n);
 %Acl'*Pk + Pk*Acl + QVM
 
 %Output-----------------------------------------------
    %h2 = round( sqrt(abs(trace(G'*Pk*G)) ),10)
-Hardy2 = round( sqrt(abs(trace(G'*Pk*G)) ),10);
+   %hessian = 2(R*K -)
+%Hardy2 =  round( sqrt(abs(trace(G'*Pk*G))) )
+Hardy2 = sqrt( (trace(G'*Pk*G)) )
 end
