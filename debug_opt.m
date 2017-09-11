@@ -13,8 +13,20 @@ p_rd = 0.08;
 p_rm = 0.008;
 %--------------------
 
+%Bus fault size / probability
+%==============================
+bus1f = 0.05;
+bus2f = 1.0;
+bus3f = 0.08;
+bus4f = 1.0;
+bus5f = 0.5;
+number_busses = 5;
+II = eye(number_busses);      % size n-by-n matrix
+%II = [bus1f,0.0,0.0,0.0,0.0; 0.0,bus2f,0.0,0.0,0.0; 0.0,0.0,bus3f,0.0,0.0; 0.0,0.0,0.0,bus4f,0.0; 0.0,0.0,0.0,0.0,bus5f]*100;
+%------------------------------
+
 %objective function
-fun =@(mg) find_Pm(p_qt,p_qw,p_rd,p_rm, mg(1),mg(2),mg(3),mg(4),mg(5),mg(6),mg(7),mg(8),mg(9),mg(10));
+fun =@(mg) find_Pm(p_qt,p_qw,p_rd,p_rm,II, mg(1),mg(2),mg(3),mg(4),mg(5),mg(6),mg(7),mg(8),mg(9),mg(10));
 
 
 % bounds
@@ -58,7 +70,7 @@ disp(S + newline + "Hardy2 = " + num2str(fval));
 
 
 
-function Hardy2 = find_Pm(p_qt,p_qw,p_rd,p_rm, vd1,vd2,vd3,vd4,vd5,vm1,vm2,vm3,vm4,vm5)
+function Hardy2 = find_Pm(p_qt,p_qw,p_rd,p_rm,II_defined, vd1,vd2,vd3,vd4,vd5,vm1,vm2,vm3,vm4,vm5)
 
 subMatrix = [2 3 4 5];
 
@@ -314,14 +326,7 @@ B_tilde = [B_tilde_i       zeros(2,1)   zeros(2,1)   zeros(2,1)   zeros(2,1);
 %==============================================================================================
 % Closed-loop system
 
-%Bus fault size / probability
-bus1f = 0.05;
-bus2f = 1.0;
-bus3f = 0.08;
-bus4f = 1.0;
-bus5f = 0.5;
-II = eye(size(M, 1));      % size n-by-n matrix
-%II = [bus1f,0.0,0.0,0.0,0.0; 0.0,bus2f,0.0,0.0,0.0; 0.0,0.0,bus3f,0.0,0.0; 0.0,0.0,0.0,bus4f,0.0; 0.0,0.0,0.0,0.0,bus5f]*100;
+II = II_defined;
 
 IIg = eye(size(M,1), size(M,1));
 
